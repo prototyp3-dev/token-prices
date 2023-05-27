@@ -49,9 +49,9 @@ contract TokenPricesUniswapV2 {
         uint zeta_weth = uniswapV2Router.quote(1, zeta_reserves, weth2_reserves);
 
         bytes memory payload = abi.encode(
-            usdc_weth, usdc_weth_ts,
-            uni_weth, uni_weth_ts,
-            zeta_weth, zeta_weth_ts
+            usdc_weth, usdc_weth_ts, usdc_reserves, weth0_reserves,
+            uni_weth, uni_weth_ts, uni_reserves, weth1_reserves,
+            zeta_weth, zeta_weth_ts, zeta_reserves, weth2_reserves
         );
 
         // calls Cartesi's addInput to send the token prices info to L2
