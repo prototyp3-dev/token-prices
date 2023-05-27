@@ -40,6 +40,52 @@ def post(endpoint, json):
     response = requests.post(f"{rollup_server}/{endpoint}", json=json)
     logger.info(f"Received {endpoint} status {response.status_code} body {response.content}")
 
+def process_chainlink_input(binary):
+    # decode payload
+    btc_timestamp, btc_price, eth_timestamp, eth_price, link_timestamp, link_price = decode_abi(
+        ['uint', 'int', 'uint', 'int', 'uint', 'int'],
+        binary
+    )
+
+    # build notice
+    notice = {
+        "btc-timestamp": btc_timestamp,
+        "btc-price (USD)": btc_price * 10**(-8),
+        "ETH-timestamp": eth_timestamp,
+        "ETH-price (USD)": eth_price * 10**(-8),
+        "LINK-timestamp": link_timestamp,
+        "LINK-price (USD)": link_price * 10**(-8)
+    }
+
+    return notice
+
+def process_uniswap_input(binary):
+    # decode payload
+    (usdc_weth, usdc_weth_ts, usdc_reserves, weth0_reserves,
+    uni_weth, uni_weth_ts, uni_reserves, weth1_reserves,
+    zeta_weth, zeta_weth_ts, zeta_reserves, weth2_reserves) = decode_abi(
+        [
+            'uint', 'uint32', 'uint112', 'uint112',
+            'uint', 'uint32', 'uint112', 'uint112',
+            'uint', 'uint32', 'uint112', 'uint112'
+        ],
+        binary
+    )
+
+    # build notice
+    notice = {
+        "USDCxWETH-timestamp": usdc_weth_ts,
+        "USDCxWETH": f"1:{usdc_weth}",
+        "USDCxWETH-Reserves": f"{usdc_reserves}x{weth0_reserves}",
+        "UNIxWETH-timestamp": uni_weth_ts,
+        "UNIxWETH": f"1:{uni_weth}",
+        "UNIxWETH-Reserves": f"{uni_reserves}x{weth1_reserves}",
+        "ZETAxWETH-timestamp": zeta_weth_ts,
+        "ZETAxWETH": f"1:{zeta_weth}",
+        "ZETAxWETH-Reserves": f"{zeta_reserves}x{weth2_reserves}"
+    }
+
+    return notice
 
 def handle_advance(data):
     logger.info(f"Received advance request data {data}")
@@ -47,21 +93,12 @@ def handle_advance(data):
     status = "accept"
     try:
         binary = bytes.fromhex(data["payload"][2:])
+        notice = None
 
-        # decode payload
-        btc_timestamp, btc_price, eth_timestamp, eth_price, link_timestamp, link_price = decode_abi(
-            ['uint', 'int', 'uint', 'int', 'uint', 'int'],
-            binary
-        )
-
-        notice = {
-            "btc-timestamp": btc_timestamp,
-            "btc-price (USD)": btc_price,
-            "ETH-timestamp": eth_timestamp,
-            "ETH-price (USD)": eth_price,
-            "LINK-timestamp": link_timestamp,
-            "LINK-price (USD)": link_price
-        }
+        try:
+            notice = process_uniswap_input(binary)
+        except:
+            notice = process_chainlink_input(binary)
 
         post("notice", {"payload": str2hex(json.dumps(notice))})
 

@@ -4,7 +4,7 @@ pragma solidity >=0.7.0 <0.9.0;
 import "@cartesi/rollups/contracts/interfaces/IInput.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
-contract PriceConsumerV3 {
+contract TokenPricesChainlinkV3 {
     address deployer;
     address L2_DAPP;
 
