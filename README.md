@@ -1,5 +1,22 @@
 # token-prices DApp
 
+```
+Cartesi Rollups version: 0.8.x
+```
+
+This DApp exemplifies two ways to feed token prices to a Cartesi Rollups DApp. The DApp receives the prices of the tokens as Input and generates a notice with the information received. Two contracts provide the prices in two ways, one using [Chainlink](https://docs.chain.link/) and the other using [Uniswap](https://uniswap.org/). Chainlink is a Decentralized Oracle Network (DON) that can feed the DApp with real-world prices, like the ETH price in dollars. It does that through Aggregators that observe and aggregate the price of some token. Uniswap, on the other hand, is a decentralized protocol for swapping ERC20 tokens, so it has pools of pairs of ERC20 tokens and provides the "price" of a token as the amount equivalent to the other in the pool.
+
+Chainlink Aggregators used in this example [(Goerli)](https://docs.chain.link/data-feeds/price-feeds/addresses#Goerli%20Testnet):
+- BTC/USD
+- ETH/USD
+- LINK/USD
+
+Uniswap Pools used in this example:
+- [USDC/WETH (Goerli)](https://www.geckoterminal.com/pt/goerli-testnet/pools/0x647595535c370f6092c6dae9d05a7ce9a8819f37)
+- [UNI/WETH (Goerli)](https://www.geckoterminal.com/pt/goerli-testnet/pools/0x28cee28a7c4b4022ac92685c07d2f33ab1a0e122)
+- [ZETA/WETH (Goerli)](https://www.geckoterminal.com/pt/goerli-testnet/pools/0xb3a16c2b68bbb0111ebd27871a5934b949837d95)
+
+**Note that the Uniswap Pools are for ERC20, so we have USDC (USD Coin) and WETH (Wrapped ETH) isntead of USD and ETH.**
 
 
 ## Requirements
@@ -157,3 +174,5 @@ After that, you can interact with the application normally [as explained above](
 After the `token-prices` contract was deployed and the Cartesi Node is running the application is ready and users can finally interact with it. The procedure for interacting is as follows:
 
 1. On Remix IDE, execute the `set_dapp_address` method of the `token-prices` contract to set the rollup contract address. This step is to allow the layer-1 contract to send inputs to the Cartesi Rollups.
+2. Execute the `pricesToRollups` (Chainlink or Uniswap) method to feed the prices to the Cartesi DApp.
+3. Check the notice with the token prices produced by the Cartesi DApp using the [frontend-console](https://github.com/cartesi/rollups-examples/tree/main/frontend-console).
