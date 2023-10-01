@@ -61,28 +61,28 @@ def process_chainlink_input(binary):
 
 def process_uniswap_input(binary):
     # decode payload
-    (usdc_weth, usdc_weth_ts, usdc_reserves, weth0_reserves,
-    uni_weth, uni_weth_ts, uni_reserves, weth1_reserves,
-    zeta_weth, zeta_weth_ts, zeta_reserves, weth2_reserves) = decode_abi(
+    (wbtc_dai, tickCumulativesWbtcDai, secondsPerLiquidityCumulativeX128sWbtcDai,
+    uni_weth, tickCumulativesUniWETH, secondsPerLiquidityCumulativeX128sUniWETH,
+    link_weth, tickCumulativesLinkWETH, secondsPerLiquidityCumulativeX128sLinkWETH) = decode_abi(
         [
-            'uint', 'uint32', 'uint112', 'uint112',
-            'uint', 'uint32', 'uint112', 'uint112',
-            'uint', 'uint32', 'uint112', 'uint112'
+            'uint256', 'int56[]', 'uint160[]',
+            'uint256', 'int56[]', 'uint160[]',
+            'uint256', 'int56[]', 'uint160[]'
         ],
         binary
     )
 
     # build notice
     notice = {
-        "USDCxWETH-timestamp": usdc_weth_ts,
-        "USDCxWETH": f"1:{usdc_weth}",
-        "USDCxWETH-Reserves": f"{usdc_reserves}x{weth0_reserves}",
-        "UNIxWETH-timestamp": uni_weth_ts,
+        "WBTCxDAI": f"1:{wbtc_dai}",
+        "WBTCxDAI-tickCumulatives": tickCumulativesWbtcDai,
+        "WBTCxDAI-secondsPerLiquidityCumulative": secondsPerLiquidityCumulativeX128sWbtcDai,
         "UNIxWETH": f"1:{uni_weth}",
-        "UNIxWETH-Reserves": f"{uni_reserves}x{weth1_reserves}",
-        "ZETAxWETH-timestamp": zeta_weth_ts,
-        "ZETAxWETH": f"1:{zeta_weth}",
-        "ZETAxWETH-Reserves": f"{zeta_reserves}x{weth2_reserves}"
+        "UNIxWETH-tickCumulatives": tickCumulativesUniWETH,
+        "UNIxWETH-secondsPerLiquidityCumulative": secondsPerLiquidityCumulativeX128sUniWETH,
+        "LINKxWETH": f"1:{link_weth}",
+        "LINKxWETH-tickCumulatives": tickCumulativesLinkWETH,
+        "LINKxWETH-secondsPerLiquidityCumulative": secondsPerLiquidityCumulativeX128sLinkWETH
     }
 
     return notice
@@ -131,12 +131,5 @@ while True:
         logger.info("No pending rollup request, trying again")
     else:
         rollup_request = response.json()
-        data = rollup_request["data"]
-        if "metadata" in data:
-            metadata = data["metadata"]
-            if metadata["epoch_index"] == 0 and metadata["input_index"] == 0:
-                rollup_address = metadata["msg_sender"]
-                logger.info(f"Captured rollup address: {rollup_address}")
-                continue
         handler = handlers[rollup_request["request_type"]]
         finish["status"] = handler(rollup_request["data"])

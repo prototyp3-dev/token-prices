@@ -1,3 +1,6 @@
 __pycache__
 .venv
 deployments
+out
+node_modules
+cache
