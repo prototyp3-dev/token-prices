@@ -14,8 +14,7 @@ from os import environ
 import logging
 import requests
 import json
-import random
-from eth_abi import decode_abi, encode_abi
+from eth_abi import decode_abi
 
 logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
@@ -61,26 +60,23 @@ def process_chainlink_input(binary):
 
 def process_uniswap_input(binary):
     # decode payload
-    (wbtc_dai, tickCumulativesWbtcDai, secondsPerLiquidityCumulativeX128sWbtcDai,
-    uni_weth, tickCumulativesUniWETH, secondsPerLiquidityCumulativeX128sUniWETH,
-    link_weth, tickCumulativesLinkWETH, secondsPerLiquidityCumulativeX128sLinkWETH) = decode_abi(
+    (tickCumulativesWbtcDai, secondsPerLiquidityCumulativeX128sWbtcDai,
+    tickCumulativesUniWETH, secondsPerLiquidityCumulativeX128sUniWETH,
+    tickCumulativesLinkWETH, secondsPerLiquidityCumulativeX128sLinkWETH) = decode_abi(
         [
-            'uint256', 'int56[]', 'uint160[]',
-            'uint256', 'int56[]', 'uint160[]',
-            'uint256', 'int56[]', 'uint160[]'
+            'int56[]', 'uint160[]',
+            'int56[]', 'uint160[]',
+            'int56[]', 'uint160[]'
         ],
         binary
     )
 
     # build notice
     notice = {
-        "WBTCxDAI": f"1:{wbtc_dai}",
         "WBTCxDAI-tickCumulatives": tickCumulativesWbtcDai,
         "WBTCxDAI-secondsPerLiquidityCumulative": secondsPerLiquidityCumulativeX128sWbtcDai,
-        "UNIxWETH": f"1:{uni_weth}",
         "UNIxWETH-tickCumulatives": tickCumulativesUniWETH,
         "UNIxWETH-secondsPerLiquidityCumulative": secondsPerLiquidityCumulativeX128sUniWETH,
-        "LINKxWETH": f"1:{link_weth}",
         "LINKxWETH-tickCumulatives": tickCumulativesLinkWETH,
         "LINKxWETH-secondsPerLiquidityCumulative": secondsPerLiquidityCumulativeX128sLinkWETH
     }

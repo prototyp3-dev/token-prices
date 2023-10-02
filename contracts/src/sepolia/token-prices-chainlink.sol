@@ -6,7 +6,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract TokenPricesChainlinkV3 {
     address deployer;
-    address L2_DAPP;
+    address public L2_DAPP;
     IInputBox inputBox = IInputBox(0x59b22D57D4f067708AB0c00552767405926dc768);
 
     AggregatorV3Interface internal btcFeed;

@@ -4,7 +4,7 @@
 Cartesi Rollups version: 0.8.x
 ```
 
-This DApp exemplifies two ways to feed token prices to a Cartesi Rollups DApp. The DApp receives the prices of the tokens as Input and generates a notice with the information received. Two contracts provide the prices in two ways, one using [Chainlink](https://docs.chain.link/) and the other using [Uniswap](https://uniswap.org/). Chainlink is a Decentralized Oracle Network (DON) that can feed the DApp with real-world prices, like the ETH price in dollars. It does that through Aggregators that observe and aggregate the price of some token. Uniswap, on the other hand, is a decentralized protocol for swapping ERC20 tokens, so it has pools of pairs of ERC20 tokens and provides the "price" of a token as the amount equivalent to the other in the pool.
+This DApp exemplifies two ways to feed token prices to a Cartesi Rollups DApp. The DApp receives the prices of the tokens as Input and generates a notice with the information received. Two contracts provide the prices in two ways, one using [Chainlink](https://docs.chain.link/) and the other using [Uniswap](https://uniswap.org/). Chainlink is a Decentralized Oracle Network (DON) that can feed the DApp with real-world prices, like the ETH price in dollars. It does that through Aggregators that observe and aggregate the price of some token. Uniswap, on the other hand, is a decentralized protocol for swapping ERC20 tokens, so it has pools of pairs of ERC20 tokens and provides the "price" of a token as pool's informations.
 
 Chainlink Aggregators used in this example [(Sepolia)](https://docs.chain.link/data-feeds/price-feeds/addresses?network=ethereum&page=1#Sepolia%20Testnet):
 - BTC/USD
@@ -18,6 +18,8 @@ Uniswap Pools used in this example:
 
 **Note that the Uniswap Pools are for ERC20 tokens, so we have WBTC (Wrapped Bitcoin) and WETH (Wrapped ETH) isntead of BTC and ETH.**
 
+> [!IMPORTANT]
+> This DApp is not to be executed locally since it integrates with other solutions (Chainlink and Uniswap).
 
 ## Requirements
 
@@ -155,8 +157,37 @@ After that, you can interact with the application normally [as explained above](
 
 ## Interacting with the DApp
 
-After the `token-prices` contract was deployed and the Cartesi Node is running the application is ready and users can finally interact with it. The procedure for interacting is as follows:
+Before beginning the interaction, declare the variables that we will be using. So first, go to a separate terminal window and execute the commands below to initialize the variables.
 
-1. On Remix IDE, execute the `set_dapp_address` method of the `token-prices` contract to set the rollup contract address. This step is to allow the layer-1 contract to send inputs to the Cartesi Rollups.
-2. Execute the `pricesToRollups` (Chainlink or Uniswap) method to feed the prices to the Cartesi DApp.
-3. Check the notice with the token prices produced by the Cartesi DApp using the [frontend-console](https://github.com/cartesi/rollups-examples/tree/main/frontend-console).
+> [!IMPORTANT]
+> Set the MNEMONIC and RPC_URL you will be using, then set the addresses for the contracts (retrieved from the `deployments` folder).
+
+```shell
+export MNEMONIC="..."
+export RPC_URL="http://..."
+export CHAINLINK_ADDRESS="0x..."
+export UNISWAP_ADDRESS="0x..."
+export DAPP_ADDRESS="0x..."
+```
+
+### Trough Chainlink
+1. Set Cartesi Rollups DApp address
+```shell
+docker run --rm --net="host" ghcr.io/foundry-rs/foundry "cast send --mnemonic \"$MNEMONIC\" --rpc-url $RPC_URL $CHAINLINK_ADDRESS \"set_dapp_address(address)\" $DAPP_ADDRESS"
+```
+
+2. Send the prices informations
+```shell
+docker run --rm --net="host" ghcr.io/foundry-rs/foundry "cast send --mnemonic \"$MNEMONIC\" --rpc-url $RPC_URL $CHAINLINK_ADDRESS \"pricesToRollups()\""
+```
+
+### Trough Uniswap
+1. Set Cartesi Rollups DApp address
+```shell
+docker run --rm --net="host" ghcr.io/foundry-rs/foundry "cast send --mnemonic \"$MNEMONIC\" --rpc-url $RPC_URL $UNISWAP_ADDRESS \"set_dapp_address(address)\" $DAPP_ADDRESS"
+```
+
+2. Send the pools informations
+```shell
+docker run --rm --net="host" ghcr.io/foundry-rs/foundry "cast send --mnemonic \"$MNEMONIC\" --rpc-url $RPC_URL $UNISWAP_ADDRESS \"pricesToRollups()\""
+```
