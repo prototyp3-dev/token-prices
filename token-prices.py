@@ -14,8 +14,7 @@ from os import environ
 import logging
 import requests
 import json
-import random
-from eth_abi import decode_abi, encode_abi
+from eth_abi import decode_abi
 
 logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
@@ -61,28 +60,25 @@ def process_chainlink_input(binary):
 
 def process_uniswap_input(binary):
     # decode payload
-    (usdc_weth, usdc_weth_ts, usdc_reserves, weth0_reserves,
-    uni_weth, uni_weth_ts, uni_reserves, weth1_reserves,
-    zeta_weth, zeta_weth_ts, zeta_reserves, weth2_reserves) = decode_abi(
+    (tickCumulativesWbtcDai, secondsPerLiquidityCumulativeX128sWbtcDai,
+    tickCumulativesUniWETH, secondsPerLiquidityCumulativeX128sUniWETH,
+    tickCumulativesLinkWETH, secondsPerLiquidityCumulativeX128sLinkWETH) = decode_abi(
         [
-            'uint', 'uint32', 'uint112', 'uint112',
-            'uint', 'uint32', 'uint112', 'uint112',
-            'uint', 'uint32', 'uint112', 'uint112'
+            'int56[]', 'uint160[]',
+            'int56[]', 'uint160[]',
+            'int56[]', 'uint160[]'
         ],
         binary
     )
 
     # build notice
     notice = {
-        "USDCxWETH-timestamp": usdc_weth_ts,
-        "USDCxWETH": f"1:{usdc_weth}",
-        "USDCxWETH-Reserves": f"{usdc_reserves}x{weth0_reserves}",
-        "UNIxWETH-timestamp": uni_weth_ts,
-        "UNIxWETH": f"1:{uni_weth}",
-        "UNIxWETH-Reserves": f"{uni_reserves}x{weth1_reserves}",
-        "ZETAxWETH-timestamp": zeta_weth_ts,
-        "ZETAxWETH": f"1:{zeta_weth}",
-        "ZETAxWETH-Reserves": f"{zeta_reserves}x{weth2_reserves}"
+        "WBTCxDAI-tickCumulatives": tickCumulativesWbtcDai,
+        "WBTCxDAI-secondsPerLiquidityCumulative": secondsPerLiquidityCumulativeX128sWbtcDai,
+        "UNIxWETH-tickCumulatives": tickCumulativesUniWETH,
+        "UNIxWETH-secondsPerLiquidityCumulative": secondsPerLiquidityCumulativeX128sUniWETH,
+        "LINKxWETH-tickCumulatives": tickCumulativesLinkWETH,
+        "LINKxWETH-secondsPerLiquidityCumulative": secondsPerLiquidityCumulativeX128sLinkWETH
     }
 
     return notice
@@ -131,12 +127,5 @@ while True:
         logger.info("No pending rollup request, trying again")
     else:
         rollup_request = response.json()
-        data = rollup_request["data"]
-        if "metadata" in data:
-            metadata = data["metadata"]
-            if metadata["epoch_index"] == 0 and metadata["input_index"] == 0:
-                rollup_address = metadata["msg_sender"]
-                logger.info(f"Captured rollup address: {rollup_address}")
-                continue
         handler = handlers[rollup_request["request_type"]]
         finish["status"] = handler(rollup_request["data"])

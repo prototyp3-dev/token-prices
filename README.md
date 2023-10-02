@@ -4,20 +4,22 @@
 Cartesi Rollups version: 0.8.x
 ```
 
-This DApp exemplifies two ways to feed token prices to a Cartesi Rollups DApp. The DApp receives the prices of the tokens as Input and generates a notice with the information received. Two contracts provide the prices in two ways, one using [Chainlink](https://docs.chain.link/) and the other using [Uniswap](https://uniswap.org/). Chainlink is a Decentralized Oracle Network (DON) that can feed the DApp with real-world prices, like the ETH price in dollars. It does that through Aggregators that observe and aggregate the price of some token. Uniswap, on the other hand, is a decentralized protocol for swapping ERC20 tokens, so it has pools of pairs of ERC20 tokens and provides the "price" of a token as the amount equivalent to the other in the pool.
+This DApp exemplifies two ways to feed token prices to a Cartesi Rollups DApp. The DApp receives the prices of the tokens as Input and generates a notice with the information received. Two contracts provide the prices in two ways, one using [Chainlink](https://docs.chain.link/) and the other using [Uniswap](https://uniswap.org/). Chainlink is a Decentralized Oracle Network (DON) that can feed the DApp with real-world prices, like the ETH price in dollars. It does that through Aggregators that observe and aggregate the price of some token. Uniswap, on the other hand, is a decentralized protocol for swapping ERC20 tokens, so it has pools of pairs of ERC20 tokens and provides the "price" of a token as pool's informations.
 
-Chainlink Aggregators used in this example [(Goerli)](https://docs.chain.link/data-feeds/price-feeds/addresses#Goerli%20Testnet):
+Chainlink Aggregators used in this example [(Sepolia)](https://docs.chain.link/data-feeds/price-feeds/addresses?network=ethereum&page=1#Sepolia%20Testnet):
 - BTC/USD
 - ETH/USD
 - LINK/USD
 
 Uniswap Pools used in this example:
-- [USDC/WETH (Goerli)](https://www.geckoterminal.com/pt/goerli-testnet/pools/0x647595535c370f6092c6dae9d05a7ce9a8819f37)
-- [UNI/WETH (Goerli)](https://www.geckoterminal.com/pt/goerli-testnet/pools/0x28cee28a7c4b4022ac92685c07d2f33ab1a0e122)
-- [ZETA/WETH (Goerli)](https://www.geckoterminal.com/pt/goerli-testnet/pools/0xb3a16c2b68bbb0111ebd27871a5934b949837d95)
+- [WBTC/DAI (Sepolia)](https://www.geckoterminal.com/sepolia-testnet/pools/0xd4c8fb61a56e55e898288177272bdb556ab36b2a)
+- [UNI/WETH (Sepolia)](https://www.geckoterminal.com/sepolia-testnet/pools/0x287b0e934ed0439e2a7b1d5f0fc25ea2c24b64f7)
+- [LINK/WETH (Sepolia)](https://www.geckoterminal.com/sepolia-testnet/pools/0xdd7cc9a0da070fb8b60dc6680b596133fb4a7100)
 
-**Note that the Uniswap Pools are for ERC20, so we have USDC (USD Coin) and WETH (Wrapped ETH) isntead of USD and ETH.**
+**Note that the Uniswap Pools are for ERC20 tokens, so we have WBTC (Wrapped Bitcoin) and WETH (Wrapped ETH) isntead of BTC and ETH.**
 
+> [!IMPORTANT]
+> This DApp is not to be executed locally since it integrates with other solutions (Chainlink and Uniswap).
 
 ## Requirements
 
@@ -25,22 +27,6 @@ Please refer to the [rollups-examples requirements](https://github.com/cartesi/r
 
 To interact with the DApp in testnet the following is also needed:
 1. [Metamask Plugin](https://metamask.io/)
-
-## Contracts
-
-
-
-### Deploying Smart Contracts
-
-The easiest way to deploy a smart contract is through the [Remix IDE](https://remix.ethereum.org), so the proceedings are:
-
-1. Creat a `token-prices.sol` in the contracts directory of the Remix IDE worspace.
-2. Copy the choosen smart contract code and paste it into the one created in the Remix IDE workspace.
-3. Compile the contract (Ctrl + s).
-4. Click on the Tab "Deploy & run transactions".
-5. Select the environment/network you want to deploy.
-    1. If you are running locally, make sure to run the `docker compose` command first to bring up the test environment.
-6. Click on `deploy`.
 
 ## Building
 
@@ -71,7 +57,7 @@ Deploying a new Cartesi DApp to a blockchain requires creating a smart contract 
 The first step is to build the DApp's back-end machine, which will produce a hash that serves as a unique identifier.
 
 ```shell
-docker buildx bake -f docker-bake.hcl -f docker-bake.override.hcl machine --load
+docker buildx bake -f docker-bake.hcl -f docker-bake.override.hcl machine --load --set *.args.NETWORK=sepolia
 ```
 
 Once the machine docker image is ready, we can use it to deploy a corresponding Rollups smart contract.
@@ -95,10 +81,10 @@ With that in place, you can submit a deploy transaction to the Cartesi DApp Fact
 DAPP_NAME="token-prices" docker compose --env-file env.<network> -f deploy-testnet.yml up
 ```
 
-Here, `env.<network>` specifies general parameters for the target network, like its name and chain ID. In the case of Goerli, the command would be:
+Here, `env.<network>` specifies general parameters for the target network, like its name and chain ID. In the case of Sepolia, the command would be:
 
 ```shell
-DAPP_NAME="token-prices" docker compose --env-file env.goerli -f deploy-testnet.yml up
+DAPP_NAME="token-prices" docker compose --env-file env.sepolia -f deploy-testnet.yml up
 ```
 
 This will create a file at `deployments/<network>/token-prices.json` with the deployed contract's address.
@@ -120,13 +106,13 @@ export WSS_URL=wss://eth-goerli.alchemyapi.io/v2/<USER_KEY>
 Then, the node itself can be started by running a docker compose as follows:
 
 ```shell
-DAPP_NAME="token-prices" docker compose --env-file env.<network> -f docker-compose-testnet.yml -f docker-compose.override.yml up
+DAPP_NAME="token-prices" docker compose --env-file env.<network> -f docker-compose-testnet.yml up
 ```
 
 Alternatively, you can also run the node on host mode by executing:
 
 ```shell
-DAPP_NAME="token-prices" docker compose --env-file env.<network> -f docker-compose-testnet.yml -f docker-compose.override.yml -f docker-compose-host-testnet.yml up
+DAPP_NAME="token-prices" docker compose --env-file env.<network> -f docker-compose-testnet.yml -f docker-compose-host-testnet.yml up
 ```
 
 ## Running the back-end in host mode
@@ -136,7 +122,7 @@ When developing an application, it is often important to easily test and debug i
 The host environment can be executed with the following command:
 
 ```shell
-docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose-host.yml up
+docker compose -f docker-compose.yml -f docker-compose-host.yml up
 ```
 
 This DApp's back-end is written in Python, so to run it in your machine you need to have `python3` installed.
@@ -171,8 +157,37 @@ After that, you can interact with the application normally [as explained above](
 
 ## Interacting with the DApp
 
-After the `token-prices` contract was deployed and the Cartesi Node is running the application is ready and users can finally interact with it. The procedure for interacting is as follows:
+Before beginning the interaction, declare the variables that we will be using. So first, go to a separate terminal window and execute the commands below to initialize the variables.
 
-1. On Remix IDE, execute the `set_dapp_address` method of the `token-prices` contract to set the rollup contract address. This step is to allow the layer-1 contract to send inputs to the Cartesi Rollups.
-2. Execute the `pricesToRollups` (Chainlink or Uniswap) method to feed the prices to the Cartesi DApp.
-3. Check the notice with the token prices produced by the Cartesi DApp using the [frontend-console](https://github.com/cartesi/rollups-examples/tree/main/frontend-console).
+> [!IMPORTANT]
+> Set the MNEMONIC and RPC_URL you will be using, then set the addresses for the contracts (retrieved from the `deployments` folder).
+
+```shell
+export MNEMONIC="..."
+export RPC_URL="http://..."
+export CHAINLINK_ADDRESS="0x..."
+export UNISWAP_ADDRESS="0x..."
+export DAPP_ADDRESS="0x..."
+```
+
+### Trough Chainlink
+1. Set Cartesi Rollups DApp address
+```shell
+docker run --rm --net="host" ghcr.io/foundry-rs/foundry "cast send --mnemonic \"$MNEMONIC\" --rpc-url $RPC_URL $CHAINLINK_ADDRESS \"set_dapp_address(address)\" $DAPP_ADDRESS"
+```
+
+2. Send the prices informations
+```shell
+docker run --rm --net="host" ghcr.io/foundry-rs/foundry "cast send --mnemonic \"$MNEMONIC\" --rpc-url $RPC_URL $CHAINLINK_ADDRESS \"pricesToRollups()\""
+```
+
+### Trough Uniswap
+1. Set Cartesi Rollups DApp address
+```shell
+docker run --rm --net="host" ghcr.io/foundry-rs/foundry "cast send --mnemonic \"$MNEMONIC\" --rpc-url $RPC_URL $UNISWAP_ADDRESS \"set_dapp_address(address)\" $DAPP_ADDRESS"
+```
+
+2. Send the pools informations
+```shell
+docker run --rm --net="host" ghcr.io/foundry-rs/foundry "cast send --mnemonic \"$MNEMONIC\" --rpc-url $RPC_URL $UNISWAP_ADDRESS \"pricesToRollups()\""
+```

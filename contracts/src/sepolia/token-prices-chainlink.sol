@@ -1,32 +1,33 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.9.0;
 
-import "@cartesi/rollups/contracts/interfaces/IInput.sol";
+import "@cartesi/rollups/contracts/inputs/IInputBox.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract TokenPricesChainlinkV3 {
     address deployer;
-    address L2_DAPP;
+    address public L2_DAPP;
+    IInputBox inputBox = IInputBox(0x59b22D57D4f067708AB0c00552767405926dc768);
 
     AggregatorV3Interface internal btcFeed;
     AggregatorV3Interface internal ethFeed;
     AggregatorV3Interface internal linkFeed;
 
     /**
-        * Network: Goerli
+        * Network: Sepolia
         * Aggregator: TOKEN/USD
     */
     constructor() {
         btcFeed = AggregatorV3Interface(
-            0xA39434A63A52E749F02807ae27335515BA4b07F7
+            0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
         );
 
         ethFeed = AggregatorV3Interface(
-            0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e
+            0x694AA1769357215DE4FAC081bf1f309aDC325306
         );
 
         linkFeed = AggregatorV3Interface(
-            0x48731cF7e84dc94C5f84577882c14Be11a5B7456
+            0xc59E3633BAAC79493d908e63626716e204A45EdF
         );
 
         deployer = msg.sender;
@@ -75,6 +76,6 @@ contract TokenPricesChainlinkV3 {
         );
 
         // calls Cartesi's addInput to send the token prices info to L2
-        IInput(L2_DAPP).addInput(payload);
+        inputBox.addInput(L2_DAPP, payload);
     }
 }
