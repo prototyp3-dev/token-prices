@@ -1,7 +1,7 @@
 # token-prices DApp
 
 ```
-Cartesi Rollups version: 0.8.x
+Cartesi Rollups version: 1.0.x
 ```
 
 This DApp exemplifies two ways to feed token prices to a Cartesi Rollups DApp. The DApp receives the prices of the tokens as Input and generates a notice with the information received. Two contracts provide the prices in two ways, one using [Chainlink](https://docs.chain.link/) and the other using [Uniswap](https://uniswap.org/). Chainlink is a Decentralized Oracle Network (DON) that can feed the DApp with real-world prices, like the ETH price in dollars. It does that through Aggregators that observe and aggregate the price of some token. Uniswap, on the other hand, is a decentralized protocol for swapping ERC20 tokens, so it has pools of pairs of ERC20 tokens and provides the "price" of a token as pool's informations.
